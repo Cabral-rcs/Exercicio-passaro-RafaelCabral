@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+    <title>Exercício do Pássaro</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <script>
+
+        var config = { // Declara uma variável para as configurações do jogo.
+            type: Phaser.AUTO, // Base no Phaser.
+            width: 800, // Largura.
+            height: 600, // Altura.
+
+            scene: {  // Define as "Etapas". 
+                preload: preload, // Carrega.
+                create: create, // Adiciona.
+                update: update // Atualiza.
+            }
+        };
+
+        var game = new Phaser.Game(config); //Inicia uma função do Phaser.
+        var passarinho; // Declara uma variável que será tida como base do personagem.
+        var som = new Audio('assets/pio.mp3'); //Declara uma variável 'som' e carrega ela com direção para seu local no repositório.
+
+        function preload() { // Função que carrega os assets e elementos.
+            this.load.image('bg', 'assets/bg_space.png'); //Carrega no programa uma imagem estática. 
+            this.load.spritesheet('bird', 'assets/bird-purple.png', { frameWidth: 75, frameHeight: 75 }); //Carrega no programa uma imagem no estilo spritesheet.
+        }
+
+        function create() { // Função que adiciona os assets e elementos na tela do programa.
+            this.add.image(400, 300, 'bg').setScale(1.2); // Adiciona uma imagem estática - o Background.
+            passarinho = this.add.sprite(100, 500, 'bird').setScale(1.3); // Atribui a variável 'passarinho' uma imagem com movimento na posição 100 e 500.
+
+            this.anims.create({ // Aqui acontece a configuração da animação.
+                key: 'fly', // Key é uma tag para identificação. 
+                frames: this.anims.generateFrameNumbers('bird', { start: 0, end: 7 }), // Define a quantidade de frames que contém a imagem spritesheet em questão.
+                framRate: 10, // Define a velocidade em que os frames são alternados.
+                repeat: -1 // Define o ciclo de repetição - Nesse caso o -1 é infinito. 
+            });
+
+            passarinho.anims.play('fly', true); // Essa função inicia através do phaser a animação programada.
+        }
+        function update() { // Essa função passar a se atualizar constantemente durante o funcionamento do programa.
+            if (passarinho.x <= 100 && passarinho.y >= 500) { // Condição que concilia posição em X e Y para o movimento de ida.
+                passarinhoIda = true; // Retornar uma variável como 'liberadora' do movimento.
+                passarinho.setAngle(360) // Atua no ângulo da imagem.
+                console.log('Agora o passarinho vai');
+            }
+            if (passarinho.x < 700 && passarinhoIda === true) { // Condição que concilia posição em X de chegada e a liberação para o movimento de ida.
+                passarinho.x += 10; // Soma-se 10 a antiga posição em X (Indo para frente).
+
+            }
+            if (passarinho.x === 700 && passarinho.y === 500) { // Condição que concilia posição em X e Y para o movimento de subida.
+                passarinhoDesce = false // Retornar uma variável como não 'liberadora' do movimento de descida, então acontece a subida.
+                passarinho.setAngle(270); // Atua no ângulo da imagem.
+                console.log('Agora o passarinho sobe');
+            }
+            if (passarinho.x >= 700 && passarinho.y > 100 && passarinhoDesce == false) { // Condição para o passarinho que estiver em determinada posição e estiver liberado para subir.
+                passarinho.y -= 10; // É removido 10 da sua posição em Y, ou seja, ele acaba subindo.
+            }
+            if (passarinho.x === 700 && passarinho.y === 100) { // Condição que concilia posição em X e Y para o movimento de volta.
+                passarinhoIda = false; // Retornar uma variável como não 'liberadora' do movimento de ida, então acontece a volta.
+                passarinho.setAngle(180); // Atua no ângulo da imagem.
+                console.log('Agora o passarinho volta');
+            }
+            if (passarinho.x >= 100 && passarinhoIda === false) { // Condição para o passarinho que estiver em determinada posição em X e estiver liberado para voltar.
+                passarinho.x -= 10; // É removido 10 da sua posição em X, ou seja, ele acaba voltando.
+            }
+            if (passarinho.x === 100 && passarinho.y === 100) { // Condição que concilia posição em X e Y para o movimento de Descida.
+                passarinhoDesce = true; // Retornar uma variável como 'liberadora' do movimento de descida.
+                passarinho.setAngle(90) // Atua no ângulo da imagem.
+                console.log('Agora o passarinho desce');
+            }
+            if (passarinho.y < 500 && passarinhoDesce == true) { // Condição para o passarinho que estiver em determinada posição em y e estiver liberado para descer.
+                passarinho.y += 10; // Soma 10 na posição do pássaro em y.
+            }
+        }
+
+        var numeroRepeticao = 5;  //Defino a quantidade de vezes que irá repetir o som.      
+        function delay(ms) { //Crio uma função chamada delay para que dentro da estrutura "for" os números até o número máximo de repetição definido, sejam todos processados sem sobreposição do áudio.
+            return new Promise(resolve => setTimeout(resolve, ms)); //Essa função retorna uma promise que é um objeto assíncrono com valor resolvido ou que será resolvido, como nesse caso.
+        }                                 // SetTimeout atrasa uma função (Nesse caso é a promise) e o "ms" é o tempo em milissegundos.
+                                        // Dessa forma, para a promise ser concluída é necessário que "resolve" (Aguardar X ms - setTimeout) seja resolvido.
+        async function executarLoop() { // Crio uma função assíncrona chamada executarLoop para tocar o som, esperar um tempo e depois tocar novamente.
+            for (var i = 1; i <= numeroRepeticao; i++) { // Estrutura 'for' para rodar o som o número de vezes que a variável 'numeroRepeticao' defimiu.
+                await delay(3000); // await faz com que essa função espere até que a promise retornada por 'delay(3000)' seja resolvida - assíncronismo. 
+                som.play(); //Depois de esperar, o som é tocado.
+            }
+
+        }
+
+        executarLoop(); // Chamo a função para que o loop de resolver a promise (Aguardar alguns ms) e tocar o som aconteça.
+    </script>
+
+</body>
+
+</html>
